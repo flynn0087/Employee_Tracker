@@ -9,3 +9,8 @@ const connection = mysql.createConnection({
     password: "twinswin",
     database: "employee_trackerDB"
   });
+
+  connection.connect(function(err) {
+    if (err) throw err;
+    start();
+  })
