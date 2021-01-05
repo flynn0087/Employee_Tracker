@@ -18,6 +18,7 @@ connection.connect(function(err) {
     start();
 });
 
+//this create the inquirer prompt to figure out which option to do
 function start() {
   inquirer
     .prompt({
@@ -35,4 +36,40 @@ function start() {
         "Exit"
       ]
     })
+    // this section creates the function that operate from the option selected
+    .then(function(answer) {
+      switch (answer.action) {
+      case "Add a department":
+        addDepartment();
+        break;
+
+      case "Add a role":
+        addRole();
+        break;
+        
+      case "Add an employee":
+        addEmployee();
+        break;
+        
+      case "View all departments":
+        viewDepartments();
+        break;
+          
+      case "View all roles":
+        viewRoles();
+        break;
+            
+      case "View all employees":
+        viewEmployees();
+        break;
+              
+      case "Update an employee role":
+        updateRole();
+        break;
+                
+      case "Exit":
+        connection.end();
+        break;         
+      }
+    });
 }
