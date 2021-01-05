@@ -17,3 +17,22 @@ connection.connect(function(err) {
     if (err) throw err;
     start();
 });
+
+function start() {
+  inquirer
+    .prompt({
+      name: "action",
+      type: "list",
+      message: "What would you like to do?",
+      choices: [
+        "Add a department",
+        "Add a role",
+        "Add an employee",
+        "View all departments",
+        "View all roles",
+        "View all employees",
+        "Update employee role",
+        "Exit"
+      ]
+    })
+}
