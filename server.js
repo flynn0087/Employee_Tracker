@@ -36,7 +36,7 @@ function start() {
         "Exit"
       ]
     })
-    // this section creates the function that operate from the option selected
+    // this section creates the functions that operate from the option selected
     .then(function(answer) {
       switch (answer.action) {
       case "Add a department":
@@ -74,6 +74,30 @@ function start() {
     });
 };
 
+//this function will allow you to add a department
+function addDepartment() {
+  inquirer
+    .prompt({
+      name: "newDepartment",
+      type: "input",
+      message: "What is the name of the department you would like to add?"
+    })
+    .then(function(answer) {
+      connection.query(
+        "INSERT INTO department SET ?",
+        {
+          department_name: answer.newDepartment
+        },
+        function (err) {
+          if (err) throw err;
+          console.log("The department was sucessfully added!");
+          start()
+        }
+      );
+    });
+};
+
+//this function allows viewing by department including a salary total for the department
 function viewDepartments() {
   connection.query("SELECT department.id, department.department_name, SUM(role.salary) AS expense FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id GROUP BY department.id, department.department_name", function(err, results) {
     if (err) throw err;
@@ -82,6 +106,7 @@ function viewDepartments() {
   });
 };
 
+//this function allows you to view all the roles
 function viewRoles() {
   connection.query("SELECT role.id, role.title, department.department_name AS department, role.salary FROM role LEFT JOIN department on role.department_id = department.id", function (err, results) {
     if (err) throw err;
@@ -90,6 +115,7 @@ function viewRoles() {
   });
 };
 
+//this function allows you to view all the employees
 function viewEmployees() {
   connection.query("SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary FROM employee LEFT JOIN role on role.id = employee.role_id", function (err, results) {
     if (err) throw err;
