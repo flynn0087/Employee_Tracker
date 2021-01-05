@@ -2,15 +2,19 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const consoleTable = require("console.table");
+const promMysql = require("promise-mysql");
 
-// create the connection information for the sql database
-const connection = mysql.createConnection({
+// create the connection information for the sql database and promise mysql
+const conAccess = ({
     host: "localhost",
     port: 3306,
     user: "root",
     password: "twinswin",
     database: "employee_trackerDB"
-  });
+});
+
+//this is the initial mysql connection
+let connection = mysql.createConnection(conAccess);  
 
 // connect to the mysql server and sql database
 connection.connect(function(err) {
@@ -95,6 +99,145 @@ function addDepartment() {
         }
       );
     });
+};
+
+//this function will allow to add a role
+function addRole() {
+  let departmentName = []
+  promMysql.createConnection(conAccess)
+  .then((otherConnection) => {
+     return Promise.all([
+      otherConnection.query("SELECT * FROM department"),
+     ]);
+  })
+  .then(([department]) => {
+    for (let i = 0; i < department.length; i++) {
+      departmentName.push(department[i].department_name);
+    }
+    return Promise.all([department]);
+
+  }).then(([department]) => {
+    inquirer.prompt([
+      {
+      type: "input",
+      name: "role",
+      message: "What role should be added: ",
+      },
+      {
+      type: "input",
+      name: "salary",
+      message: "What is the salary for this role: ",
+      },
+      {
+      type: "list",
+      name: "department",
+      message: "What department is this role under: ",
+      choices: departmentName
+      }
+              
+    ]).then(answers=>{
+      let departmentID;
+      for (let i = 0; i < department.length; i++) {
+        if (answers.department == department[i].department_name) {
+          departmentID = department[i].id;
+        }
+      } 
+      connection.query(
+        "INSERT INTO role SET ?",
+          {
+          title: answers.role,
+          salary: answers.salary,
+          department_id: departmentID
+          },
+          function(err) {
+          if (err) throw err;
+          console.log("The role was sucessfully added!");
+          start();
+          }
+      );
+    })
+  })   
+}; 
+
+//this section is for adding a new employee
+function addEmployee() {
+  let employeeRole = [];
+  let employees = [];
+
+  promMysql.createConnection(conAccess)
+  .then((otherConnection) => {
+     return Promise.all([
+      otherConnection.query("SELECT * FROM role"),
+      otherConnection.query("SELECT employee.id, concat(employee.first_name, ' ' ,  employee.last_name) AS fullName FROM employee ORDER BY fullName ASC")
+     ]);
+  })
+  .then(([role,name]) => {
+    for (let i = 0; i < role.length; i++) {
+      employeeRole.push(role[i].title);
+    }
+
+    for (let i = 0; i < name.length; i++) {
+      employees.push(name[i].fullName)
+    }
+
+    return Promise.all([role,name]);
+  })
+  .then(([role,name]) => {
+    employees.push('null')
+    inquirer.prompt([
+      {
+      type: "input",
+      name: "first",
+      message: "First Name: ",
+      },
+      {
+      type: "input",
+      name: "last",
+      message: "Last Name: ",
+      },
+      {
+      type: "list",
+      name: "currentRole",
+      message: "Role within the company: ",
+      choices: employeeRole
+      },
+      {
+      type: "list",
+      name: "manager",
+      message: "Name of their manager: ",
+      choices: employees 
+      }   
+    ]).then(answers=> {
+      let roleID;
+      let managerID = null;
+
+      for (let i = 0; i < role.length; i++) {
+        if (answers.currentRole == role[i].title) {
+          roleID = role[i].id;
+        }
+      }
+      for (let i = 0; i < name.length; i++) {
+        if (answers.manager == name[i].fullName) {
+          managerID = name[i].id;
+        }
+      }
+
+      connection.query(
+        "INSERT INTO employee SET ?",
+          {
+          first_name: answers.first,
+          last_name: answers.last,
+          role_id: roleID,
+          manager_id: managerID
+          },
+          function(err) {
+          if (err) throw err;
+          console.log("The employee was successfully added");
+          start();
+          }
+      );
+    });
+  })   
 };
 
 //this function allows viewing by department including a salary total for the department
