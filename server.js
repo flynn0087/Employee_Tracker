@@ -81,3 +81,19 @@ function viewDepartments() {
     start();
   });
 };
+
+function viewRoles() {
+  connection.query("SELECT role.id, role.title, department.department_name AS department, role.salary FROM role LEFT JOIN department on role.department_id = department.id", function (err, results) {
+    if (err) throw err;
+    console.table(results);
+    start();
+  });
+};
+
+function viewEmployees() {
+  connection.query("SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary FROM employee LEFT JOIN role on role.id = employee.role_id", function (err, results) {
+    if (err) throw err;
+    console.table(results);
+    start();
+  });
+};
