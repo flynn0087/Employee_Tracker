@@ -72,4 +72,12 @@ function start() {
         break;         
       }
     });
-}
+};
+
+function viewDepartments() {
+  connection.query("SELECT department.id, department.department_name, SUM(role.salary) AS expense FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id GROUP BY department.id, department.department_name", function(err, results) {
+    if (err) throw err;
+    console.table(results);
+    start();
+  });
+};
