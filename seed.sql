@@ -1,3 +1,5 @@
+USE employee_trackerDB;
+
 INSERT INTO department (department_name)
 VALUES ("Accounting"), ("Engineering"), ("Human Resources"), ("Legal");
 
